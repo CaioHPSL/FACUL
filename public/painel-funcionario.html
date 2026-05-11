@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funcionario - AgroLab Sorriso</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand-row">
+                <div class="brand-mark">AL</div>
+                <div>
+                    <p class="brand-title">AgroLab Sorriso</p>
+                    <p class="brand-subtitle">Area do funcionario</p>
+                </div>
+            </div>
+
+            <nav class="side-nav" aria-label="Navegacao principal">
+                <button class="nav-item active" type="button" data-tab="novo-pedido" onclick="abrirAba('novo-pedido')">
+                    <span class="nav-icon">NP</span>Novo Pedido
+                </button>
+                <button class="nav-item" type="button" data-tab="pesquisar-pedido" onclick="abrirAba('pesquisar-pedido')">
+                    <span class="nav-icon">PP</span>Pesquisar Pedido
+                </button>
+                <button class="nav-item" type="button" data-tab="cadastros" onclick="abrirAba('cadastros')">
+                    <span class="nav-icon">CD</span>Cadastros
+                </button>
+                <button class="nav-item" type="button" data-tab="laudos-resultados" onclick="abrirAba('laudos-resultados')">
+                    <span class="nav-icon">LD</span>Laudos e Resultados
+                </button>
+                <a class="nav-item" href="index.html"><span class="nav-icon">AC</span>Trocar acesso</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="workspace-badge">
+                    <span>Usuario</span>
+                    <strong id="nome-funcionario">Funcionario</strong>
+                </div>
+                <button class="btn btn-danger" onclick="sair()">Sair</button>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <div>
+                    <h1 id="titulo-aba">Novo Pedido</h1>
+                    <p id="subtitulo-aba">Cadastre um pedido e adicione amostras vinculadas a ele.</p>
+                </div>
+                <div class="top-actions">
+                    <span class="tag">Funcionario</span>
+                </div>
+            </header>
+
+            <main class="workspace">
+                <p id="mensagem" class="feedback-line"></p>
+
+                <section id="aba-novo-pedido" class="tab-screen">
+                    <div class="content-grid">
+                        <section class="panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2>Novo pedido</h2>
+                                    <p>O numero do pedido e gerado automaticamente.</p>
+                                </div>
+                                <span class="tag">Pedido</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-grid">
+                                    <div class="field">
+                                        <label for="pedido-cpf">CPF do cliente</label>
+                                        <input type="text" id="pedido-cpf" placeholder="000.000.000-00">
+                                    </div>
+                                    <div class="field">
+                                        <label for="pedido-nome">Nome do cliente</label>
+                                        <input type="text" id="pedido-nome" placeholder="Nome completo">
+                                    </div>
+                                    <div class="field full">
+                                        <label for="pedido-endereco">Endereco</label>
+                                        <input type="text" id="pedido-endereco" placeholder="Fazenda, cidade ou referencia">
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    <button class="btn btn-primary" onclick="criarPedido()">Criar pedido</button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2>Amostras do pedido</h2>
+                                    <p id="pedido-selecionado-texto">Crie um pedido para liberar o cadastro de amostras.</p>
+                                </div>
+                                <span class="tag">Pendente</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-grid">
+                                    <div class="field">
+                                        <label for="amostra-tipo">Tipo de amostra</label>
+                                        <select id="amostra-tipo"></select>
+                                    </div>
+                                    <div class="field">
+                                        <label>Status inicial</label>
+                                        <input type="text" value="Pendente" readonly>
+                                    </div>
+                                    <div class="field full">
+                                        <label for="amostra-identificacao">Identificacao da amostra</label>
+                                        <input type="text" id="amostra-identificacao" placeholder="Talhao 01, Amostra A...">
+                                    </div>
+                                    <div class="field full">
+                                        <label for="amostra-laudo">Laudo ou resultado</label>
+                                        <textarea id="amostra-laudo" placeholder="Resultado da analise, quando ja estiver disponivel"></textarea>
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    <button class="btn btn-primary" onclick="adicionarAmostra()">Adicionar amostra</button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section id="novo-pedido-amostras" class="panel spaced-panel oculto">
+                        <div class="panel-header">
+                            <div>
+                                <h2 id="novo-pedido-titulo">Amostras vinculadas</h2>
+                                <p id="novo-pedido-subtitulo"></p>
+                            </div>
+                            <span class="tag">Pedido criado</span>
+                        </div>
+                        <div id="novo-pedido-lista-amostras" class="panel-body"></div>
+                    </section>
+                </section>
+
+                <section id="aba-pesquisar-pedido" class="tab-screen oculto">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2>Pesquisar pedido</h2>
+                                <p>Use os filtros ou liste todos os pedidos cadastrados.</p>
+                            </div>
+                            <span class="tag">Filtros</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="filter-grid">
+                                <div class="field">
+                                    <label for="filtro-cpf">CPF</label>
+                                    <input type="text" id="filtro-cpf" placeholder="CPF do cliente">
+                                </div>
+                                <div class="field">
+                                    <label for="filtro-pedido">Numero do pedido</label>
+                                    <input type="text" id="filtro-pedido" placeholder="0001/2026">
+                                </div>
+                                <div class="field">
+                                    <label for="filtro-amostra">Numero da amostra</label>
+                                    <input type="number" min="1" id="filtro-amostra" placeholder="1">
+                                </div>
+                                <div class="field">
+                                    <label for="filtro-tipo">Tipo de amostra</label>
+                                    <select id="filtro-tipo"></select>
+                                </div>
+                            </div>
+                            <div class="button-row">
+                                <button class="btn btn-ghost" onclick="limparFiltrosPedidos()">Listar todos</button>
+                                <button class="btn btn-secondary" onclick="pesquisarPedidos()">Pesquisar</button>
+                            </div>
+                        </div>
+                        <div id="resultado-pedidos" class="panel-body panel-body-border"></div>
+                    </section>
+
+                    <div id="detalhe-pedido" class="modal-backdrop oculto" onclick="fecharJanelaPedido(event)">
+                        <section class="modal-window" role="dialog" aria-modal="true" aria-labelledby="detalhe-titulo">
+                            <div class="panel-header">
+                                <div>
+                                    <h2 id="detalhe-titulo">Detalhes do pedido</h2>
+                                    <p id="detalhe-subtitulo"></p>
+                                </div>
+                                <div class="top-actions">
+                                    <span class="tag">Amostras</span>
+                                    <button class="btn btn-ghost" type="button" onclick="fecharJanelaPedido()">Fechar</button>
+                                </div>
+                            </div>
+                            <div id="lista-amostras-pedido" class="panel-body modal-body"></div>
+                        </section>
+                    </div>
+                </section>
+
+                <section id="aba-cadastros" class="tab-screen oculto">
+                    <div class="section-split">
+                        <div>
+                            <h2>Cadastro de Cliente</h2>
+                            <p>Cadastre, pesquise, edite ou apague clientes.</p>
+                        </div>
+                    </div>
+
+                    <div class="content-grid">
+                        <section class="panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2 id="cliente-form-titulo">Cadastrar cliente</h2>
+                                    <p>Dados principais do cliente e da fazenda.</p>
+                                </div>
+                                <span class="tag">Cliente</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-grid">
+                                    <div class="field">
+                                        <label for="cad-cliente-nome">Nome do cliente</label>
+                                        <input type="text" id="cad-cliente-nome" placeholder="Nome completo">
+                                    </div>
+                                    <div class="field">
+                                        <label for="cad-cliente-cpf">CPF ou CNPJ</label>
+                                        <input type="text" id="cad-cliente-cpf" placeholder="CPF ou CNPJ">
+                                    </div>
+                                    <div class="field full">
+                                        <label for="cad-cliente-endereco">Endereco</label>
+                                        <input type="text" id="cad-cliente-endereco" placeholder="Endereco">
+                                    </div>
+                                    <div class="field">
+                                        <label for="cad-cliente-telefone">Telefone</label>
+                                        <input type="text" id="cad-cliente-telefone" placeholder="Telefone">
+                                    </div>
+                                    <div class="field">
+                                        <label for="cad-cliente-email">E-mail</label>
+                                        <input type="email" id="cad-cliente-email" placeholder="email@exemplo.com">
+                                    </div>
+                                    <div class="field full">
+                                        <label for="cad-cliente-fazenda">Nome da fazenda</label>
+                                        <input type="text" id="cad-cliente-fazenda" placeholder="Nome da fazenda">
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    <button class="btn btn-ghost oculto" id="cancelar-edicao-cliente" onclick="limparFormularioCliente()">Cancelar edicao</button>
+                                    <button class="btn btn-primary" id="salvar-cliente-btn" onclick="salvarCliente()">Cadastrar cliente</button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2>Clientes cadastrados</h2>
+                                    <p>Pesquise pelo nome, documento, telefone, e-mail ou fazenda.</p>
+                                </div>
+                                <span class="tag">Pesquisa</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="field">
+                                    <label for="busca-cliente">Pesquisar cliente</label>
+                                    <input type="text" id="busca-cliente" placeholder="Digite para pesquisar">
+                                </div>
+                                <div class="button-row">
+                                    <button class="btn btn-ghost" onclick="limparBuscaCliente()">Listar todos</button>
+                                    <button class="btn btn-secondary" onclick="carregarClientes()">Pesquisar</button>
+                                </div>
+                            </div>
+                            <div id="lista-clientes" class="panel-body panel-body-border"></div>
+                        </section>
+                    </div>
+
+                    <div class="section-split spaced-panel">
+                        <div>
+                            <h2>Cadastro de Funcionario</h2>
+                            <p>Cadastre, pesquise, edite ou apague funcionarios.</p>
+                        </div>
+                    </div>
+
+                    <div class="content-grid">
+                        <section class="panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2 id="funcionario-form-titulo">Cadastrar funcionario</h2>
+                                    <p>A senha e salva protegida no banco.</p>
+                                </div>
+                                <span class="tag">Equipe</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-grid">
+                                    <div class="field">
+                                        <label for="novo-func-nome">Nome</label>
+                                        <input type="text" id="novo-func-nome" placeholder="Nome do funcionario">
+                                    </div>
+                                    <div class="field">
+                                        <label for="novo-func-senha">Senha</label>
+                                        <input type="password" id="novo-func-senha" placeholder="Senha">
+                                    </div>
+                                    <div class="field">
+                                        <label for="novo-func-email">E-mail</label>
+                                        <input type="email" id="novo-func-email" placeholder="email@exemplo.com">
+                                    </div>
+                                    <div class="field">
+                                        <label for="novo-func-telefone">Telefone</label>
+                                        <input type="text" id="novo-func-telefone" placeholder="Telefone">
+                                    </div>
+                                </div>
+                                <div class="button-row">
+                                    <button class="btn btn-ghost oculto" id="cancelar-edicao-funcionario" onclick="limparFormularioFuncionario()">Cancelar edicao</button>
+                                    <button class="btn btn-primary" id="salvar-funcionario-btn" onclick="salvarFuncionario()">Cadastrar funcionario</button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="panel">
+                            <div class="panel-header">
+                                <div>
+                                    <h2>Funcionarios cadastrados</h2>
+                                    <p>Pesquise por nome, e-mail ou telefone.</p>
+                                </div>
+                                <span class="tag">Cadastro</span>
+                            </div>
+                            <div class="panel-body">
+                                <div class="field">
+                                    <label for="busca-funcionario">Pesquisar funcionario</label>
+                                    <input type="text" id="busca-funcionario" placeholder="Digite para pesquisar">
+                                </div>
+                                <div class="button-row">
+                                    <button class="btn btn-ghost" onclick="limparBuscaFuncionario()">Listar todos</button>
+                                    <button class="btn btn-secondary" onclick="carregarFuncionarios()">Pesquisar</button>
+                                </div>
+                            </div>
+                            <div id="lista-funcionarios" class="panel-body"></div>
+                        </section>
+                    </div>
+                </section>
+
+                <section id="aba-laudos-resultados" class="tab-screen oculto">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2>Laudos e resultados</h2>
+                                <p>Visualize, preencha ou edite resultados das amostras.</p>
+                            </div>
+                            <span class="tag">Resultados</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="filter-grid">
+                                <div class="field">
+                                    <label for="laudo-cpf">CPF</label>
+                                    <input type="text" id="laudo-cpf" placeholder="CPF do cliente">
+                                </div>
+                                <div class="field">
+                                    <label for="laudo-pedido">Numero do pedido</label>
+                                    <input type="text" id="laudo-pedido" placeholder="0001/2026">
+                                </div>
+                                <div class="field">
+                                    <label for="laudo-amostra">Numero da amostra</label>
+                                    <input type="number" min="1" id="laudo-amostra" placeholder="1">
+                                </div>
+                                <div class="field">
+                                    <label for="laudo-tipo">Tipo de amostra</label>
+                                    <select id="laudo-tipo"></select>
+                                </div>
+                            </div>
+                            <div class="button-row">
+                                <button class="btn btn-ghost" onclick="limparFiltrosLaudos()">Listar todos</button>
+                                <button class="btn btn-secondary" onclick="pesquisarLaudos()">Pesquisar</button>
+                            </div>
+                        </div>
+                        <div id="resultado-laudos" class="panel-body panel-body-border"></div>
+                    </section>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token_lab');
+        const tipoUsuario = localStorage.getItem('tipo_lab');
+        if (!token || tipoUsuario !== 'funcionario') window.location.href = 'index.html';
+
+        let opcoes = { tipos_amostra: [], status_funcionario: [] };
+        let pedidoSelecionadoId = null;
+        let pedidoPesquisaAbertoId = null;
+        let clienteEditandoId = null;
+        let funcionarioEditandoId = null;
+        let clientesCache = [];
+        let funcionariosCache = [];
+
+        document.getElementById('nome-funcionario').innerText = localStorage.getItem('nome_lab') || 'Funcionario';
+
+        const titulosAbas = {
+            'novo-pedido': {
+                titulo: 'Novo Pedido',
+                subtitulo: 'Cadastre um pedido e adicione amostras vinculadas a ele.'
+            },
+            'pesquisar-pedido': {
+                titulo: 'Pesquisar Pedido',
+                subtitulo: 'Busque pedidos por CPF, numero do pedido, numero da amostra ou tipo.'
+            },
+            cadastros: {
+                titulo: 'Cadastros',
+                subtitulo: 'Gerencie clientes e funcionarios.'
+            },
+            'laudos-resultados': {
+                titulo: 'Laudos e Resultados',
+                subtitulo: 'Visualize, preencha e edite laudos das amostras.'
+            }
+        };
+
+        function texto(valor, fallback = 'Nao informado') {
+            if (valor === null || valor === undefined || valor === '') return fallback;
+            return String(valor)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function valorCampo(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function mostrarMensagem(msg, sucesso = false) {
+            const alvo = document.getElementById('mensagem');
+            alvo.innerText = msg || '';
+            alvo.classList.toggle('msg-success', sucesso);
+            alvo.classList.toggle('msg-error', !sucesso);
+        }
+
+        function statusClasse(status) {
+            const chave = String(status || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+
+            if (chave === 'pendente') return 'status-pendente';
+            if (chave === 'em analise') return 'status-analise';
+            if (chave === 'concluido') return 'status-concluido';
+            if (chave === 'entregue') return 'status-entregue';
+            if (chave === 'parcial') return 'status-parcial';
+            return 'status-vazio';
+        }
+
+        async function api(url, opcoesFetch = {}) {
+            const headers = { 'Authorization': token, ...(opcoesFetch.headers || {}) };
+            if (opcoesFetch.body) headers['Content-Type'] = 'application/json';
+
+            const res = await fetch(url, { ...opcoesFetch, headers });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                if (res.status === 401 || res.status === 403) {
+                    mostrarMensagem(data.mensagem || 'Acesso negado.');
+                }
+                const err = new Error(data.mensagem || 'Erro ao processar solicitacao.');
+                err.status = res.status;
+                throw err;
+            }
+            return data;
+        }
+
+        function abrirAba(nome) {
+            document.querySelectorAll('.tab-screen').forEach((aba) => aba.classList.add('oculto'));
+            document.getElementById(`aba-${nome}`).classList.remove('oculto');
+
+            document.querySelectorAll('.side-nav .nav-item[data-tab]').forEach((item) => {
+                item.classList.toggle('active', item.dataset.tab === nome);
+            });
+
+            document.getElementById('titulo-aba').innerText = titulosAbas[nome].titulo;
+            document.getElementById('subtitulo-aba').innerText = titulosAbas[nome].subtitulo;
+            mostrarMensagem('');
+            history.replaceState(null, '', `#${nome}`);
+
+            if (nome === 'pesquisar-pedido') pesquisarPedidos();
+            if (nome === 'cadastros') {
+                carregarClientes();
+                carregarFuncionarios();
+            }
+            if (nome === 'laudos-resultados') pesquisarLaudos();
+        }
+
+        function preencherSelect(id, itens, incluirTodos = false) {
+            const select = document.getElementById(id);
+            select.innerHTML = [
+                incluirTodos ? '<option value="">Todos</option>' : '',
+                ...itens.map((item) => `<option value="${texto(item)}">${texto(item)}</option>`)
+            ].join('');
+        }
+
+        async function carregarOpcoes() {
+            opcoes = await api('/api/opcoes');
+            preencherSelect('amostra-tipo', opcoes.tipos_amostra);
+            preencherSelect('filtro-tipo', opcoes.tipos_amostra, true);
+            preencherSelect('laudo-tipo', opcoes.tipos_amostra, true);
+        }
+
+        async function criarPedido() {
+            try {
+                mostrarMensagem('');
+                const data = await api('/api/pedidos', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        cpf_cliente: valorCampo('pedido-cpf'),
+                        nome_cliente: valorCampo('pedido-nome'),
+                        endereco: valorCampo('pedido-endereco')
+                    })
+                });
+
+                document.getElementById('pedido-cpf').value = '';
+                document.getElementById('pedido-nome').value = '';
+                document.getElementById('pedido-endereco').value = '';
+                selecionarPedidoNovo(data.pedido.id, data.pedido.numero_pedido, data.pedido.nome_cliente);
+                await carregarPedidoNovo(data.pedido.id);
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function selecionarPedidoNovo(id, numero, nome) {
+            pedidoSelecionadoId = id;
+            document.getElementById('pedido-selecionado-texto').innerText = `${numero} - ${nome}`;
+        }
+
+        async function carregarPedidoNovo(id) {
+            const data = await api(`/api/pedidos/${id}`);
+            selecionarPedidoNovo(data.pedido.id, data.pedido.numero_pedido, data.pedido.nome_cliente);
+            document.getElementById('novo-pedido-amostras').classList.remove('oculto');
+            document.getElementById('novo-pedido-titulo').innerText = `Pedido ${data.pedido.numero_pedido}`;
+            document.getElementById('novo-pedido-subtitulo').innerText = `${data.pedido.nome_cliente} - CPF ${data.pedido.cpf_cliente}`;
+            renderAmostrasNovo(data.amostras);
+        }
+
+        function renderAmostrasNovo(amostras) {
+            const div = document.getElementById('novo-pedido-lista-amostras');
+            if (!amostras.length) {
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Nenhuma amostra adicionada</strong>
+                        <span>Use o formulario acima para vincular amostras ao pedido.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            div.innerHTML = `
+                <div class="table-wrap">
+                    <table class="data-table compact-table">
+                        <thead>
+                            <tr>
+                                <th>Numero - Identificacao - Tipo - Status</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${amostras.map((amostra) => `
+                                <tr>
+                                    <td><strong>${texto(amostra.numero_amostra)} - ${texto(amostra.identificacao_amostra)} - ${texto(amostra.tipo_amostra)} - ${texto(amostra.status)}</strong></td>
+                                    <td><span class="status-badge ${statusClasse(amostra.status)}">${texto(amostra.status)}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function adicionarAmostra() {
+            try {
+                mostrarMensagem('');
+                if (!pedidoSelecionadoId) throw new Error('Crie um pedido antes de adicionar amostra.');
+
+                const data = await api(`/api/pedidos/${pedidoSelecionadoId}/amostras`, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        tipo_amostra: valorCampo('amostra-tipo'),
+                        identificacao_amostra: valorCampo('amostra-identificacao'),
+                        laudo: valorCampo('amostra-laudo')
+                    })
+                });
+
+                document.getElementById('amostra-identificacao').value = '';
+                document.getElementById('amostra-laudo').value = '';
+                await carregarPedidoNovo(pedidoSelecionadoId);
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function queryPedidos() {
+            const params = new URLSearchParams();
+            if (valorCampo('filtro-cpf')) params.set('cpf', valorCampo('filtro-cpf'));
+            if (valorCampo('filtro-pedido')) params.set('numero_pedido', valorCampo('filtro-pedido'));
+            if (valorCampo('filtro-amostra')) params.set('numero_amostra', valorCampo('filtro-amostra'));
+            if (valorCampo('filtro-tipo')) params.set('tipo_amostra', valorCampo('filtro-tipo'));
+            return params.toString();
+        }
+
+        async function pesquisarPedidos() {
+            try {
+                const query = queryPedidos();
+                const pedidos = await api(`/api/pedidos${query ? `?${query}` : ''}`);
+                renderPedidos(pedidos);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function renderPedidos(pedidos) {
+            const div = document.getElementById('resultado-pedidos');
+
+            if (!Array.isArray(pedidos) || pedidos.length === 0) {
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Nenhum pedido encontrado</strong>
+                        <span>Revise os filtros ou liste todos os pedidos.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            div.innerHTML = `
+                <div class="table-wrap">
+                    <table class="data-table compact-table">
+                        <thead>
+                            <tr>
+                                <th>Pedido - Cliente - Tipo - Status</th>
+                                <th>Status</th>
+                                <th>Acao</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pedidos.map((pedido) => `
+                                <tr>
+                                    <td>
+                                        <strong>${texto(pedido.numero_pedido)} - ${texto(pedido.nome_cliente)} - ${texto(pedido.tipos_amostra)} - ${texto(pedido.status_geral)}</strong>
+                                        <small class="table-subtext">CPF ${texto(pedido.cpf_cliente)} | ${texto(pedido.total_amostras)} amostra(s)</small>
+                                    </td>
+                                    <td><span class="status-badge ${statusClasse(pedido.status_geral)}">${texto(pedido.status_geral)}</span></td>
+                                    <td class="table-actions">
+                                        <button class="btn btn-secondary" onclick="abrirPedidoPesquisa(${pedido.id})">Abrir</button>
+                                        <button class="btn btn-danger btn-small" onclick="apagarPedido(${pedido.id})">Apagar</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function abrirPedidoPesquisa(id) {
+            try {
+                abrirAba('pesquisar-pedido');
+                const data = await api(`/api/pedidos/${id}`);
+                pedidoPesquisaAbertoId = data.pedido.id;
+                document.getElementById('detalhe-pedido').classList.remove('oculto');
+                document.getElementById('detalhe-titulo').innerText = `Pedido ${data.pedido.numero_pedido}`;
+                document.getElementById('detalhe-subtitulo').innerText = `${data.pedido.nome_cliente} - CPF ${data.pedido.cpf_cliente}`;
+                renderAmostrasPedido(data.amostras);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        async function apagarPedido(id) {
+            try {
+                if (!confirm('Tem certeza que deseja apagar este pedido?')) return;
+                const data = await api(`/api/pedidos/${id}`, { method: 'DELETE' });
+                if (pedidoPesquisaAbertoId === id) {
+                    pedidoPesquisaAbertoId = null;
+                    fecharJanelaPedido();
+                }
+                await pesquisarPedidos();
+                await pesquisarLaudos();
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function fecharJanelaPedido(event) {
+            if (event && event.target !== document.getElementById('detalhe-pedido')) return;
+            document.getElementById('detalhe-pedido').classList.add('oculto');
+        }
+
+        function optionsTipo(valorAtual) {
+            return opcoes.tipos_amostra.map((tipo) => {
+                const selected = tipo === valorAtual ? 'selected' : '';
+                return `<option value="${texto(tipo)}" ${selected}>${texto(tipo)}</option>`;
+            }).join('');
+        }
+
+        function optionsStatus(valorAtual) {
+            return opcoes.status_funcionario.map((status) => {
+                const selected = status === valorAtual ? 'selected' : '';
+                return `<option value="${texto(status)}" ${selected}>${texto(status)}</option>`;
+            }).join('');
+        }
+
+        function renderAmostrasPedido(amostras) {
+            const div = document.getElementById('lista-amostras-pedido');
+            if (!amostras.length) {
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Pedido sem amostras</strong>
+                        <span>As amostras devem ser adicionadas na aba Novo Pedido.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            div.innerHTML = `
+                <div class="sample-list">
+                    ${amostras.map((amostra) => `
+                        <article class="sample-card">
+                            <div class="sample-card-head">
+                                <strong>${texto(amostra.numero_amostra)} - ${texto(amostra.identificacao_amostra)} - ${texto(amostra.tipo_amostra)} - ${texto(amostra.status)}</strong>
+                                <span class="status-badge ${statusClasse(amostra.status)}">${texto(amostra.status)}</span>
+                            </div>
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label for="edit-ident-${amostra.id}">Identificacao da amostra</label>
+                                    <input id="edit-ident-${amostra.id}" type="text" value="${texto(amostra.identificacao_amostra, '')}">
+                                </div>
+                                <div class="field">
+                                    <label for="edit-tipo-${amostra.id}">Tipo de amostra</label>
+                                    <select id="edit-tipo-${amostra.id}">${optionsTipo(amostra.tipo_amostra)}</select>
+                                </div>
+                                <div class="field">
+                                    <label for="edit-status-${amostra.id}">Status da analise</label>
+                                    <select id="edit-status-${amostra.id}">${optionsStatus(amostra.status)}</select>
+                                </div>
+                                <div class="field full">
+                                    <label for="edit-laudo-${amostra.id}">Laudo ou resultado</label>
+                                    <textarea id="edit-laudo-${amostra.id}">${texto(amostra.laudo, '')}</textarea>
+                                </div>
+                            </div>
+                            <div class="button-row">
+                                <button class="btn btn-danger" onclick="apagarAmostra(${amostra.id})">Apagar amostra</button>
+                                <button class="btn btn-primary" onclick="salvarAmostra(${amostra.id})">Salvar amostra</button>
+                            </div>
+                        </article>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function salvarAmostra(id) {
+            try {
+                const data = await api(`/api/amostras/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        identificacao_amostra: valorCampo(`edit-ident-${id}`),
+                        tipo_amostra: valorCampo(`edit-tipo-${id}`),
+                        status: valorCampo(`edit-status-${id}`),
+                        laudo: valorCampo(`edit-laudo-${id}`)
+                    })
+                });
+
+                await pesquisarPedidos();
+                if (pedidoPesquisaAbertoId) await abrirPedidoPesquisa(pedidoPesquisaAbertoId);
+                await pesquisarLaudos();
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        async function apagarAmostra(id) {
+            try {
+                if (!confirm('Tem certeza que deseja apagar esta amostra?')) return;
+                const data = await api(`/api/amostras/${id}`, { method: 'DELETE' });
+                await pesquisarPedidos();
+                if (pedidoPesquisaAbertoId) await abrirPedidoPesquisa(pedidoPesquisaAbertoId);
+                await pesquisarLaudos();
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        async function carregarClientes() {
+            const div = document.getElementById('lista-clientes');
+            div.innerHTML = `
+                <div class="empty-state">
+                    <strong>Carregando clientes</strong>
+                    <span>Aguarde um instante.</span>
+                </div>
+            `;
+
+            try {
+                const params = new URLSearchParams();
+                if (valorCampo('busca-cliente')) params.set('termo', valorCampo('busca-cliente'));
+                const clientes = await api(`/api/clientes${params.toString() ? `?${params}` : ''}`);
+                clientesCache = Array.isArray(clientes) ? clientes : [];
+
+                if (!Array.isArray(clientes) || clientes.length === 0) {
+                    div.innerHTML = `
+                        <div class="empty-state">
+                            <strong>Nenhum cliente encontrado</strong>
+                            <span>Cadastre um cliente ou ajuste a pesquisa.</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                div.innerHTML = `
+                    <div class="table-wrap">
+                        <table class="data-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Contato</th>
+                                    <th>Fazenda</th>
+                                    <th>Acao</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${clientes.map((cliente) => `
+                                    <tr>
+                                        <td>
+                                            <strong>${texto(cliente.nome)}</strong>
+                                            <small class="table-subtext">${texto(cliente.cpf)}</small>
+                                        </td>
+                                        <td>
+                                            ${texto(cliente.telefone)}
+                                            <small class="table-subtext">${texto(cliente.email)}</small>
+                                        </td>
+                                        <td>
+                                            ${texto(cliente.nome_fazenda)}
+                                            <small class="table-subtext">${texto(cliente.endereco)}</small>
+                                        </td>
+                                        <td class="table-actions">
+                                            <button class="btn btn-secondary" onclick="editarCliente(${cliente.id})">Editar</button>
+                                            <button class="btn btn-danger btn-small" onclick="apagarCliente(${cliente.id})">Apagar</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        async function salvarCliente() {
+            try {
+                const dados = {
+                    nome: valorCampo('cad-cliente-nome'),
+                    cpf: valorCampo('cad-cliente-cpf'),
+                    endereco: valorCampo('cad-cliente-endereco'),
+                    telefone: valorCampo('cad-cliente-telefone'),
+                    email: valorCampo('cad-cliente-email'),
+                    nome_fazenda: valorCampo('cad-cliente-fazenda')
+                };
+
+                const data = await api(clienteEditandoId ? `/api/clientes/${clienteEditandoId}` : '/api/clientes', {
+                    method: clienteEditandoId ? 'PUT' : 'POST',
+                    body: JSON.stringify(dados)
+                });
+
+                limparFormularioCliente();
+                await carregarClientes();
+                await pesquisarPedidos();
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function editarCliente(id) {
+            const cliente = clientesCache.find((item) => item.id === id);
+            if (!cliente) return;
+            clienteEditandoId = cliente.id;
+            document.getElementById('cad-cliente-nome').value = cliente.nome || '';
+            document.getElementById('cad-cliente-cpf').value = cliente.cpf || '';
+            document.getElementById('cad-cliente-endereco').value = cliente.endereco || '';
+            document.getElementById('cad-cliente-telefone').value = cliente.telefone || '';
+            document.getElementById('cad-cliente-email').value = cliente.email || '';
+            document.getElementById('cad-cliente-fazenda').value = cliente.nome_fazenda || '';
+            document.getElementById('cliente-form-titulo').innerText = 'Editar cliente';
+            document.getElementById('salvar-cliente-btn').innerText = 'Salvar cliente';
+            document.getElementById('cancelar-edicao-cliente').classList.remove('oculto');
+        }
+
+        function limparFormularioCliente() {
+            clienteEditandoId = null;
+            ['cad-cliente-nome', 'cad-cliente-cpf', 'cad-cliente-endereco', 'cad-cliente-telefone', 'cad-cliente-email', 'cad-cliente-fazenda']
+                .forEach((id) => document.getElementById(id).value = '');
+            document.getElementById('cliente-form-titulo').innerText = 'Cadastrar cliente';
+            document.getElementById('salvar-cliente-btn').innerText = 'Cadastrar cliente';
+            document.getElementById('cancelar-edicao-cliente').classList.add('oculto');
+        }
+
+        async function apagarCliente(id) {
+            try {
+                if (!confirm('Tem certeza que deseja apagar este cliente?')) return;
+                const data = await api(`/api/clientes/${id}`, { method: 'DELETE' });
+                if (clienteEditandoId === id) limparFormularioCliente();
+                await carregarClientes();
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function limparBuscaCliente() {
+            document.getElementById('busca-cliente').value = '';
+            carregarClientes();
+        }
+
+        async function carregarFuncionarios() {
+            const div = document.getElementById('lista-funcionarios');
+            div.innerHTML = `
+                <div class="empty-state">
+                    <strong>Carregando funcionarios</strong>
+                    <span>Aguarde um instante.</span>
+                </div>
+            `;
+
+            try {
+                const params = new URLSearchParams();
+                if (valorCampo('busca-funcionario')) params.set('termo', valorCampo('busca-funcionario'));
+                const funcionarios = await api(`/api/funcionarios${params.toString() ? `?${params}` : ''}`);
+                funcionariosCache = Array.isArray(funcionarios) ? funcionarios : [];
+
+                if (!Array.isArray(funcionarios) || funcionarios.length === 0) {
+                    div.innerHTML = `
+                        <div class="empty-state">
+                            <strong>Nenhum funcionario cadastrado</strong>
+                            <span>Use o formulario ao lado para cadastrar.</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                div.innerHTML = `
+                    <div class="table-wrap">
+                        <table class="data-table compact-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Contato</th>
+                                    <th>Cadastro</th>
+                                    <th>Acao</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${funcionarios.map((funcionario) => `
+                                    <tr>
+                                        <td>
+                                            <strong>${texto(funcionario.nome)}</strong>
+                                        </td>
+                                        <td>
+                                            ${texto(funcionario.email)}
+                                            <small class="table-subtext">${texto(funcionario.telefone)}</small>
+                                        </td>
+                                        <td>${texto(formatarData(funcionario.data_cadastro))}</td>
+                                        <td class="table-actions">
+                                            <button class="btn btn-secondary" onclick="editarFuncionario(${funcionario.id})">Editar</button>
+                                            <button class="btn btn-danger btn-small" onclick="apagarFuncionario(${funcionario.id})">Apagar</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (err) {
+                const nomeAtual = localStorage.getItem('nome_lab') || 'Usuario atual';
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Lista indisponivel no momento</strong>
+                        <span>${texto(err.status === 404 ? 'Reinicie o servidor e abra esta aba novamente.' : err.message)}</span>
+                        <span class="table-subtext">Logado agora: ${texto(nomeAtual)}</span>
+                    </div>
+                `;
+                mostrarMensagem(err.status === 404 ? 'Reinicie o servidor para atualizar a listagem de funcionarios.' : err.message);
+            }
+        }
+
+        function formatarData(valor) {
+            if (!valor) return 'Nao informado';
+            const data = new Date(valor);
+            if (Number.isNaN(data.getTime())) return valor;
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        async function salvarFuncionario() {
+            try {
+                const dados = {
+                    nome: valorCampo('novo-func-nome'),
+                    senha: valorCampo('novo-func-senha'),
+                    email: valorCampo('novo-func-email'),
+                    telefone: valorCampo('novo-func-telefone')
+                };
+
+                const data = await api(funcionarioEditandoId ? `/api/funcionarios/${funcionarioEditandoId}` : '/api/funcionarios', {
+                    method: funcionarioEditandoId ? 'PUT' : 'POST',
+                    body: JSON.stringify(dados)
+                });
+
+                limparFormularioFuncionario();
+                await carregarFuncionarios();
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function editarFuncionario(id) {
+            const funcionario = funcionariosCache.find((item) => item.id === id);
+            if (!funcionario) return;
+            funcionarioEditandoId = funcionario.id;
+            document.getElementById('novo-func-nome').value = funcionario.nome || '';
+            document.getElementById('novo-func-email').value = funcionario.email || '';
+            document.getElementById('novo-func-telefone').value = funcionario.telefone || '';
+            document.getElementById('novo-func-senha').value = '';
+            document.getElementById('novo-func-senha').placeholder = 'Deixe em branco para manter';
+            document.getElementById('funcionario-form-titulo').innerText = 'Editar funcionario';
+            document.getElementById('salvar-funcionario-btn').innerText = 'Salvar funcionario';
+            document.getElementById('cancelar-edicao-funcionario').classList.remove('oculto');
+        }
+
+        function limparFormularioFuncionario() {
+            funcionarioEditandoId = null;
+            ['novo-func-nome', 'novo-func-senha', 'novo-func-email', 'novo-func-telefone']
+                .forEach((id) => document.getElementById(id).value = '');
+            document.getElementById('novo-func-senha').placeholder = 'Senha';
+            document.getElementById('funcionario-form-titulo').innerText = 'Cadastrar funcionario';
+            document.getElementById('salvar-funcionario-btn').innerText = 'Cadastrar funcionario';
+            document.getElementById('cancelar-edicao-funcionario').classList.add('oculto');
+        }
+
+        async function apagarFuncionario(id) {
+            try {
+                if (!confirm('Tem certeza que deseja apagar este funcionario?')) return;
+                const data = await api(`/api/funcionarios/${id}`, { method: 'DELETE' });
+                if (funcionarioEditandoId === id) limparFormularioFuncionario();
+                await carregarFuncionarios();
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function limparBuscaFuncionario() {
+            document.getElementById('busca-funcionario').value = '';
+            carregarFuncionarios();
+        }
+
+        async function cadastrarFuncionario() {
+            try {
+                const data = await api('/api/funcionarios', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        nome: valorCampo('novo-func-nome'),
+                        senha: valorCampo('novo-func-senha'),
+                        email: valorCampo('novo-func-email'),
+                        telefone: valorCampo('novo-func-telefone')
+                    })
+                });
+                limparFormularioFuncionario();
+                await carregarFuncionarios();
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function queryLaudos() {
+            const params = new URLSearchParams();
+            if (valorCampo('laudo-cpf')) params.set('cpf', valorCampo('laudo-cpf'));
+            if (valorCampo('laudo-pedido')) params.set('numero_pedido', valorCampo('laudo-pedido'));
+            if (valorCampo('laudo-amostra')) params.set('numero_amostra', valorCampo('laudo-amostra'));
+            if (valorCampo('laudo-tipo')) params.set('tipo_amostra', valorCampo('laudo-tipo'));
+            return params.toString();
+        }
+
+        async function pesquisarLaudos() {
+            try {
+                const query = queryLaudos();
+                const amostras = await api(`/api/laudos${query ? `?${query}` : ''}`);
+                renderLaudos(amostras);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function renderLaudos(amostras) {
+            const div = document.getElementById('resultado-laudos');
+            if (!Array.isArray(amostras) || amostras.length === 0) {
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Nenhum laudo encontrado</strong>
+                        <span>Revise os filtros ou liste todos os resultados.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            div.innerHTML = `
+                <div class="sample-list">
+                    ${amostras.map((amostra) => `
+                        <article class="sample-card">
+                            <div class="sample-card-head">
+                                <strong>${texto(amostra.numero_pedido)} - ${texto(amostra.nome_cliente)} - ${texto(amostra.tipo_amostra)} - ${texto(amostra.status)}</strong>
+                                <span class="status-badge ${statusClasse(amostra.status)}">${texto(amostra.status)}</span>
+                            </div>
+                            <p class="sample-meta">Amostra ${texto(amostra.numero_amostra)} - ${texto(amostra.identificacao_amostra)} | CPF ${texto(amostra.cpf_cliente)}</p>
+                            <div class="field">
+                                <label for="laudo-edit-${amostra.id}">Laudo ou resultado</label>
+                                <textarea id="laudo-edit-${amostra.id}">${texto(amostra.laudo, '')}</textarea>
+                            </div>
+                            <div class="button-row">
+                                <button class="btn btn-ghost" onclick="abrirPedidoPesquisa(${amostra.pedido_id})">Abrir pedido</button>
+                                <button class="btn btn-primary" onclick="salvarLaudo(${amostra.id})">Salvar laudo</button>
+                            </div>
+                        </article>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        async function salvarLaudo(id) {
+            try {
+                const data = await api(`/api/amostras/${id}/laudo`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ laudo: valorCampo(`laudo-edit-${id}`) })
+                });
+                await pesquisarLaudos();
+                if (pedidoPesquisaAbertoId) await abrirPedidoPesquisa(pedidoPesquisaAbertoId);
+                mostrarMensagem(data.mensagem, true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function limparFiltrosPedidos() {
+            ['filtro-cpf', 'filtro-pedido', 'filtro-amostra'].forEach((id) => document.getElementById(id).value = '');
+            document.getElementById('filtro-tipo').value = '';
+            pesquisarPedidos();
+        }
+
+        function limparFiltrosLaudos() {
+            ['laudo-cpf', 'laudo-pedido', 'laudo-amostra'].forEach((id) => document.getElementById(id).value = '');
+            document.getElementById('laudo-tipo').value = '';
+            pesquisarLaudos();
+        }
+
+        function sair() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') fecharJanelaPedido();
+        });
+
+        async function iniciar() {
+            try {
+                await carregarOpcoes();
+                const abaInicial = location.hash.replace('#', '') || 'novo-pedido';
+                abrirAba(titulosAbas[abaInicial] ? abaInicial : 'novo-pedido');
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        iniciar();
+    </script>
+</body>
+</html>

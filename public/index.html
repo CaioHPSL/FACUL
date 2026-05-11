@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso - AgroLab Sorriso</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body class="login-page">
+    <main class="login-shell">
+        <aside class="login-rail">
+            <div>
+                <div class="brand-row">
+                    <div class="brand-mark">AL</div>
+                    <div>
+                        <p class="brand-title">AgroLab Sorriso</p>
+                        <p class="brand-subtitle">Pedidos e amostras</p>
+                    </div>
+                </div>
+
+                <h1>Sistema de controle do laboratório</h1>
+            </div>
+
+            <div class="impact-phrase" aria-label="Frase institucional">
+                <span>Qualidade gera resultado</span>
+            </div>
+        </aside>
+
+        <section class="login-content">
+            <div class="login-card">
+                <p class="section-label">Acesso seguro</p>
+                <h2>Entrar no sistema</h2>
+                <p>Selecione seu perfil para continuar.</p>
+
+                <p id="msg-retorno" class="msg-error"></p>
+
+                <div id="escolha" class="profile-grid">
+                    <button class="profile-button" onclick="mostrar('form-cliente')">
+                        <span class="button-icon">CL</span>
+                        <span>
+                            <strong>Cliente</strong>
+                            <small>Pesquisar pedidos vinculados ao CPF</small>
+                        </span>
+                    </button>
+                    <button class="profile-button" onclick="mostrar('form-func')">
+                        <span class="button-icon">FN</span>
+                        <span>
+                            <strong>Funcionário</strong>
+                            <small>Cadastrar pedidos, amostras e laudos</small>
+                        </span>
+                    </button>
+                </div>
+
+                <div id="form-cliente" class="auth-form oculto">
+                    <h3>Acesso do cliente</h3>
+                    <div class="field">
+                        <label for="cpf-login">CPF</label>
+                        <input type="text" id="cpf-login" placeholder="000.000.000-00" autocomplete="off">
+                    </div>
+                    <div class="button-row">
+                        <button class="btn btn-ghost" onclick="mostrar('escolha')">Voltar</button>
+                        <button class="btn btn-primary" onclick="loginCliente()">Entrar</button>
+                    </div>
+                </div>
+
+                <div id="form-func" class="auth-form oculto">
+                    <h3>Acesso do funcionário</h3>
+                    <div class="field">
+                        <label for="nome-login">Nome</label>
+                        <input type="text" id="nome-login" placeholder="Nome do funcionário" autocomplete="username">
+                    </div>
+                    <div class="field">
+                        <label for="senha-login">Senha</label>
+                        <input type="password" id="senha-login" placeholder="Senha" autocomplete="current-password">
+                    </div>
+                    <div class="button-row">
+                        <button class="btn btn-ghost" onclick="mostrar('escolha')">Voltar</button>
+                        <button class="btn btn-primary" onclick="loginFuncionario()">Entrar</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function mostrar(id) {
+            mensagem('');
+            document.getElementById('escolha').classList.add('oculto');
+            document.getElementById('form-cliente').classList.add('oculto');
+            document.getElementById('form-func').classList.add('oculto');
+            document.getElementById(id).classList.remove('oculto');
+        }
+
+        function mensagem(texto, sucesso = false) {
+            const alvo = document.getElementById('msg-retorno');
+            alvo.innerText = texto;
+            alvo.classList.toggle('msg-success', sucesso);
+            alvo.classList.toggle('msg-error', !sucesso);
+        }
+
+        async function enviarJson(url, dados, opcoes = {}) {
+            const res = await fetch(url, {
+                method: opcoes.method || 'POST',
+                headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) },
+                body: JSON.stringify(dados)
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.mensagem || 'Erro ao processar solicitação.');
+            return data;
+        }
+
+        async function loginCliente() {
+            try {
+                const cpf = document.getElementById('cpf-login').value;
+                const data = await enviarJson('/api/login/cliente', { cpf });
+                localStorage.setItem('token_lab', data.token);
+                localStorage.setItem('tipo_lab', 'cliente');
+                localStorage.setItem('nome_lab', data.nome);
+                localStorage.setItem('cpf_lab', data.cpf);
+                window.location.href = 'painel-cliente.html';
+            } catch (err) {
+                mensagem(err.message);
+            }
+        }
+
+        async function loginFuncionario() {
+            try {
+                const nome = document.getElementById('nome-login').value;
+                const senha = document.getElementById('senha-login').value;
+                const data = await enviarJson('/api/login/funcionario', { nome, senha });
+                localStorage.setItem('token_lab', data.token);
+                localStorage.setItem('tipo_lab', 'funcionario');
+                localStorage.setItem('nome_lab', data.nome);
+                localStorage.removeItem('cpf_lab');
+                window.location.href = 'painel-funcionario.html';
+            } catch (err) {
+                mensagem(err.message);
+            }
+        }
+    </script>
+</body>
+</html>

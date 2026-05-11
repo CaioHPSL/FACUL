@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente - AgroLab Sorriso</title>
+    <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand-row">
+                <div class="brand-mark">AL</div>
+                <div>
+                    <p class="brand-title">AgroLab Sorriso</p>
+                    <p class="brand-subtitle">Area do cliente</p>
+                </div>
+            </div>
+
+            <nav class="side-nav" aria-label="Navegacao principal">
+                <button class="nav-item active" type="button" data-tab-cliente="pesquisar-pedido" onclick="abrirAbaCliente('pesquisar-pedido')">
+                    <span class="nav-icon">PP</span>Pesquisar Pedido
+                </button>
+                <button class="nav-item" type="button" data-tab-cliente="laudos-resultados" onclick="abrirAbaCliente('laudos-resultados')">
+                    <span class="nav-icon">LD</span>Laudos e Resultados
+                </button>
+                <a class="nav-item" href="index.html"><span class="nav-icon">AC</span>Trocar acesso</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="workspace-badge">
+                    <span>Cliente</span>
+                    <strong id="nome-cliente">Cliente</strong>
+                </div>
+                <button class="btn btn-danger" onclick="sair()">Sair</button>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <div>
+                    <h1 id="cliente-titulo-aba">Pesquisar Pedido</h1>
+                    <p id="cliente-subtitulo-aba">Consulte pedidos e amostras vinculados ao seu CPF.</p>
+                </div>
+                <div class="top-actions">
+                    <button class="btn btn-secondary" onclick="atualizarAbaAtual()">Atualizar</button>
+                </div>
+            </header>
+
+            <main class="workspace">
+                <p id="mensagem" class="feedback-line"></p>
+
+                <section id="aba-cliente-pesquisar-pedido" class="tab-screen">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2>Pesquisa de pedidos</h2>
+                                <p>CPF, numero do pedido, numero da amostra e tipo.</p>
+                            </div>
+                            <span class="tag">Cliente</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="filter-grid">
+                                <div class="field">
+                                    <label for="cliente-cpf">CPF</label>
+                                    <input type="text" id="cliente-cpf" readonly>
+                                </div>
+                                <div class="field">
+                                    <label for="cliente-pedido">Numero do pedido</label>
+                                    <input type="text" id="cliente-pedido" placeholder="0001/2026">
+                                </div>
+                                <div class="field">
+                                    <label for="cliente-amostra">Numero da amostra</label>
+                                    <input type="number" min="1" id="cliente-amostra" placeholder="1">
+                                </div>
+                                <div class="field">
+                                    <label for="cliente-tipo">Tipo de amostra</label>
+                                    <select id="cliente-tipo"></select>
+                                </div>
+                            </div>
+                            <div class="button-row">
+                                <button class="btn btn-ghost" onclick="limparFiltrosPedidosCliente()">Listar todos</button>
+                                <button class="btn btn-secondary" onclick="pesquisarPedidos()">Pesquisar</button>
+                            </div>
+                        </div>
+                        <div id="resultado-pedidos" class="panel-body panel-body-border"></div>
+                    </section>
+
+                    <section id="detalhe-pedido" class="panel spaced-panel oculto">
+                        <div class="panel-header">
+                            <div>
+                                <h2 id="detalhe-titulo">Detalhes do pedido</h2>
+                                <p id="detalhe-subtitulo"></p>
+                            </div>
+                            <span class="tag">Amostras</span>
+                        </div>
+                        <div id="lista-amostras" class="panel-body"></div>
+                    </section>
+                </section>
+
+                <section id="aba-cliente-laudos-resultados" class="tab-screen oculto">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2>Laudos e resultados</h2>
+                                <p>Abra o laudo para visualizar o resultado da amostra.</p>
+                            </div>
+                            <span class="tag">Somente leitura</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="filter-grid">
+                                <div class="field">
+                                    <label for="laudo-cliente-cpf">CPF</label>
+                                    <input type="text" id="laudo-cliente-cpf" readonly>
+                                </div>
+                                <div class="field">
+                                    <label for="laudo-cliente-pedido">Numero do pedido</label>
+                                    <input type="text" id="laudo-cliente-pedido" placeholder="0001/2026">
+                                </div>
+                                <div class="field">
+                                    <label for="laudo-cliente-amostra">Numero da amostra</label>
+                                    <input type="number" min="1" id="laudo-cliente-amostra" placeholder="1">
+                                </div>
+                                <div class="field">
+                                    <label for="laudo-cliente-tipo">Tipo de amostra</label>
+                                    <select id="laudo-cliente-tipo"></select>
+                                </div>
+                            </div>
+                            <div class="button-row">
+                                <button class="btn btn-ghost" onclick="limparFiltrosLaudosCliente()">Listar todos</button>
+                                <button class="btn btn-secondary" onclick="pesquisarLaudosCliente()">Pesquisar</button>
+                            </div>
+                        </div>
+                        <div id="resultado-laudos-cliente" class="panel-body panel-body-border"></div>
+                    </section>
+
+                    <section id="laudo" class="panel spaced-panel oculto">
+                        <div class="panel-header">
+                            <div>
+                                <h2 id="laudo-titulo">Laudo ou resultado</h2>
+                                <p id="laudo-subtitulo"></p>
+                            </div>
+                            <span class="tag">Entregue</span>
+                        </div>
+                        <div class="panel-body">
+                            <div id="conteudo-laudo" class="laudo-box"></div>
+                        </div>
+                    </section>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token_lab');
+        const tipoUsuario = localStorage.getItem('tipo_lab');
+        const cpfCliente = localStorage.getItem('cpf_lab');
+        if (!token || tipoUsuario !== 'cliente' || !cpfCliente) window.location.href = 'index.html';
+
+        let pedidoAbertoId = null;
+        let abaClienteAtual = 'pesquisar-pedido';
+        let opcoes = { tipos_amostra: [] };
+
+        document.getElementById('nome-cliente').innerText = localStorage.getItem('nome_lab') || 'Cliente';
+        document.getElementById('cliente-cpf').value = cpfCliente;
+        document.getElementById('laudo-cliente-cpf').value = cpfCliente;
+
+        const titulosCliente = {
+            'pesquisar-pedido': {
+                titulo: 'Pesquisar Pedido',
+                subtitulo: 'Consulte pedidos e amostras vinculados ao seu CPF.'
+            },
+            'laudos-resultados': {
+                titulo: 'Laudos e Resultados',
+                subtitulo: 'Visualize laudos vinculados ao seu CPF.'
+            }
+        };
+
+        function texto(valor, fallback = 'Nao informado') {
+            if (valor === null || valor === undefined || valor === '') return fallback;
+            return String(valor)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function valorCampo(id) {
+            return document.getElementById(id).value.trim();
+        }
+
+        function mostrarMensagem(msg, sucesso = false) {
+            const alvo = document.getElementById('mensagem');
+            alvo.innerText = msg || '';
+            alvo.classList.toggle('msg-success', sucesso);
+            alvo.classList.toggle('msg-error', !sucesso);
+        }
+
+        function statusClasse(status) {
+            const chave = String(status || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase();
+
+            if (chave === 'pendente') return 'status-pendente';
+            if (chave === 'em analise') return 'status-analise';
+            if (chave === 'concluido') return 'status-concluido';
+            if (chave === 'entregue') return 'status-entregue';
+            if (chave === 'parcial') return 'status-parcial';
+            return 'status-vazio';
+        }
+
+        async function api(url, opcoesFetch = {}) {
+            const headers = { 'Authorization': token, ...(opcoesFetch.headers || {}) };
+            if (opcoesFetch.body) headers['Content-Type'] = 'application/json';
+
+            const res = await fetch(url, { ...opcoesFetch, headers });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.mensagem || 'Erro ao processar solicitacao.');
+            return data;
+        }
+
+        function abrirAbaCliente(nome) {
+            abaClienteAtual = nome;
+            document.querySelectorAll('.tab-screen').forEach((aba) => aba.classList.add('oculto'));
+            document.getElementById(`aba-cliente-${nome}`).classList.remove('oculto');
+            document.querySelectorAll('.side-nav .nav-item[data-tab-cliente]').forEach((item) => {
+                item.classList.toggle('active', item.dataset.tabCliente === nome);
+            });
+            document.getElementById('cliente-titulo-aba').innerText = titulosCliente[nome].titulo;
+            document.getElementById('cliente-subtitulo-aba').innerText = titulosCliente[nome].subtitulo;
+            mostrarMensagem('');
+            history.replaceState(null, '', `#${nome}`);
+
+            if (nome === 'pesquisar-pedido') pesquisarPedidos();
+            if (nome === 'laudos-resultados') pesquisarLaudosCliente();
+        }
+
+        function atualizarAbaAtual() {
+            if (abaClienteAtual === 'laudos-resultados') pesquisarLaudosCliente();
+            else pesquisarPedidos();
+        }
+
+        function preencherSelect(id, itens, incluirTodos = false) {
+            const select = document.getElementById(id);
+            select.innerHTML = [
+                incluirTodos ? '<option value="">Todos</option>' : '',
+                ...itens.map((item) => `<option value="${texto(item)}">${texto(item)}</option>`)
+            ].join('');
+        }
+
+        async function carregarOpcoes() {
+            opcoes = await api('/api/opcoes');
+            preencherSelect('cliente-tipo', opcoes.tipos_amostra, true);
+            preencherSelect('laudo-cliente-tipo', opcoes.tipos_amostra, true);
+        }
+
+        function queryPedidos() {
+            const params = new URLSearchParams();
+            params.set('cpf', valorCampo('cliente-cpf'));
+            if (valorCampo('cliente-pedido')) params.set('numero_pedido', valorCampo('cliente-pedido'));
+            if (valorCampo('cliente-amostra')) params.set('numero_amostra', valorCampo('cliente-amostra'));
+            if (valorCampo('cliente-tipo')) params.set('tipo_amostra', valorCampo('cliente-tipo'));
+            return params.toString();
+        }
+
+        async function pesquisarPedidos() {
+            try {
+                mostrarMensagem('');
+                const pedidos = await api(`/api/cliente/pedidos?${queryPedidos()}`);
+                renderPedidos(pedidos);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function renderPedidos(pedidos) {
+            const div = document.getElementById('resultado-pedidos');
+
+            if (!Array.isArray(pedidos) || pedidos.length === 0) {
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Nenhum pedido encontrado</strong>
+                        <span>Revise os filtros ou consulte o laboratorio.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            div.innerHTML = `
+                <div class="table-wrap">
+                    <table class="data-table compact-table">
+                        <thead>
+                            <tr>
+                                <th>Pedido - Cliente - Tipo - Status</th>
+                                <th>Status</th>
+                                <th>Acao</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pedidos.map((pedido) => `
+                                <tr>
+                                    <td>
+                                        <strong>${texto(pedido.numero_pedido)} - ${texto(pedido.nome_cliente)} - ${texto(pedido.tipos_amostra)} - ${texto(pedido.status_geral)}</strong>
+                                        <small class="table-subtext">CPF ${texto(pedido.cpf_cliente)} | ${texto(pedido.total_amostras)} amostra(s)</small>
+                                    </td>
+                                    <td><span class="status-badge ${statusClasse(pedido.status_geral)}">${texto(pedido.status_geral)}</span></td>
+                                    <td class="table-actions">
+                                        <button class="btn btn-secondary" onclick="abrirPedido(${pedido.id})">Abrir</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function abrirPedido(id) {
+            try {
+                abrirAbaCliente('pesquisar-pedido');
+                mostrarMensagem('');
+                const data = await api(`/api/cliente/pedidos/${id}?cpf=${encodeURIComponent(valorCampo('cliente-cpf'))}`);
+                pedidoAbertoId = data.pedido.id;
+                document.getElementById('detalhe-pedido').classList.remove('oculto');
+                document.getElementById('detalhe-titulo').innerText = `Pedido ${data.pedido.numero_pedido}`;
+                document.getElementById('detalhe-subtitulo').innerText = `${data.pedido.nome_cliente} - CPF ${data.pedido.cpf_cliente}`;
+                renderAmostras(data.amostras);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function renderAmostras(amostras) {
+            const div = document.getElementById('lista-amostras');
+            if (!amostras.length) {
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Pedido sem amostras</strong>
+                        <span>O laboratorio ainda nao adicionou amostras a este pedido.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            div.innerHTML = `
+                <div class="table-wrap">
+                    <table class="data-table compact-table">
+                        <thead>
+                            <tr>
+                                <th>Numero - Identificacao - Tipo - Status</th>
+                                <th>Status</th>
+                                <th>Laudo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${amostras.map((amostra) => `
+                                <tr>
+                                    <td><strong>${texto(amostra.numero_amostra)} - ${texto(amostra.identificacao_amostra)} - ${texto(amostra.tipo_amostra)} - ${texto(amostra.status)}</strong></td>
+                                    <td><span class="status-badge ${statusClasse(amostra.status)}">${texto(amostra.status)}</span></td>
+                                    <td class="table-actions">
+                                        <button class="btn btn-primary" onclick="abrirLaudo(${amostra.id})">Abrir laudo</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function queryLaudosCliente() {
+            const params = new URLSearchParams();
+            params.set('cpf', valorCampo('laudo-cliente-cpf'));
+            if (valorCampo('laudo-cliente-pedido')) params.set('numero_pedido', valorCampo('laudo-cliente-pedido'));
+            if (valorCampo('laudo-cliente-amostra')) params.set('numero_amostra', valorCampo('laudo-cliente-amostra'));
+            if (valorCampo('laudo-cliente-tipo')) params.set('tipo_amostra', valorCampo('laudo-cliente-tipo'));
+            return params.toString();
+        }
+
+        async function pesquisarLaudosCliente() {
+            try {
+                mostrarMensagem('');
+                const amostras = await api(`/api/cliente/laudos?${queryLaudosCliente()}`);
+                renderLaudosCliente(amostras);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function renderLaudosCliente(amostras) {
+            const div = document.getElementById('resultado-laudos-cliente');
+            if (!Array.isArray(amostras) || amostras.length === 0) {
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Nenhum laudo encontrado</strong>
+                        <span>Revise os filtros ou consulte seus pedidos.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            div.innerHTML = `
+                <div class="table-wrap">
+                    <table class="data-table compact-table">
+                        <thead>
+                            <tr>
+                                <th>Pedido - Amostra - Tipo - Status</th>
+                                <th>Status</th>
+                                <th>Laudo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${amostras.map((amostra) => `
+                                <tr>
+                                    <td>
+                                        <strong>${texto(amostra.numero_pedido)} - ${texto(amostra.numero_amostra)} - ${texto(amostra.identificacao_amostra)} - ${texto(amostra.tipo_amostra)} - ${texto(amostra.status)}</strong>
+                                    </td>
+                                    <td><span class="status-badge ${statusClasse(amostra.status)}">${texto(amostra.status)}</span></td>
+                                    <td class="table-actions">
+                                        <button class="btn btn-primary" onclick="abrirLaudo(${amostra.id})">Abrir laudo</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        async function abrirLaudo(amostraId) {
+            try {
+                abrirAbaCliente('laudos-resultados');
+                mostrarMensagem('');
+                const data = await api(`/api/cliente/amostras/${amostraId}/laudo?cpf=${encodeURIComponent(cpfCliente)}`);
+                document.getElementById('laudo').classList.remove('oculto');
+                document.getElementById('laudo-titulo').innerText = `Laudo da amostra ${data.amostra.numero_amostra}`;
+                document.getElementById('laudo-subtitulo').innerText = `${data.amostra.numero_pedido} - ${data.amostra.identificacao_amostra} - ${data.amostra.tipo_amostra}`;
+                document.getElementById('conteudo-laudo').innerHTML = texto(data.laudo, 'Laudo ainda nao cadastrado.');
+                if (pedidoAbertoId) await abrirPedidoSemTrocarAba(pedidoAbertoId);
+                await pesquisarPedidos();
+                await pesquisarLaudosCliente();
+                document.getElementById('laudo').classList.remove('oculto');
+                mostrarMensagem('Laudo aberto. Status da amostra atualizado para Entregue.', true);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        async function abrirPedidoSemTrocarAba(id) {
+            const data = await api(`/api/cliente/pedidos/${id}?cpf=${encodeURIComponent(cpfCliente)}`);
+            renderAmostras(data.amostras);
+        }
+
+        function limparFiltrosPedidosCliente() {
+            ['cliente-pedido', 'cliente-amostra'].forEach((id) => document.getElementById(id).value = '');
+            document.getElementById('cliente-tipo').value = '';
+            pesquisarPedidos();
+        }
+
+        function limparFiltrosLaudosCliente() {
+            ['laudo-cliente-pedido', 'laudo-cliente-amostra'].forEach((id) => document.getElementById(id).value = '');
+            document.getElementById('laudo-cliente-tipo').value = '';
+            pesquisarLaudosCliente();
+        }
+
+        function sair() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        async function iniciar() {
+            try {
+                await carregarOpcoes();
+                const abaInicial = location.hash.replace('#', '') || 'pesquisar-pedido';
+                abrirAbaCliente(titulosCliente[abaInicial] ? abaInicial : 'pesquisar-pedido');
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        iniciar();
+    </script>
+</body>
+</html>
