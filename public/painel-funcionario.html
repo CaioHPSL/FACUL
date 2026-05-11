@@ -24,6 +24,9 @@
                 <button class="nav-item" type="button" data-tab="pesquisar-pedido" onclick="abrirAba('pesquisar-pedido')">
                     <span class="nav-icon">PP</span>Pesquisar Pedido
                 </button>
+                <button class="nav-item" type="button" data-tab="amostras" onclick="abrirAba('amostras')">
+                    <span class="nav-icon">AM</span>Amostras
+                </button>
                 <button class="nav-item" type="button" data-tab="cadastros" onclick="abrirAba('cadastros')">
                     <span class="nav-icon">CD</span>Cadastros
                 </button>
@@ -184,6 +187,43 @@
                             <div id="lista-amostras-pedido" class="panel-body modal-body"></div>
                         </section>
                     </div>
+                </section>
+
+                <section id="aba-amostras" class="tab-screen oculto">
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2>Todas as amostras</h2>
+                                <p>Consulte todas as amostras cadastradas no sistema.</p>
+                            </div>
+                            <span class="tag">Amostras</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="filter-grid">
+                                <div class="field">
+                                    <label for="amostra-lista-cpf">CPF</label>
+                                    <input type="text" id="amostra-lista-cpf" placeholder="CPF do cliente">
+                                </div>
+                                <div class="field">
+                                    <label for="amostra-lista-pedido">Numero do pedido</label>
+                                    <input type="text" id="amostra-lista-pedido" placeholder="0001/2026">
+                                </div>
+                                <div class="field">
+                                    <label for="amostra-lista-numero">Numero da amostra</label>
+                                    <input type="number" min="1" id="amostra-lista-numero" placeholder="1">
+                                </div>
+                                <div class="field">
+                                    <label for="amostra-lista-tipo">Tipo de amostra</label>
+                                    <select id="amostra-lista-tipo"></select>
+                                </div>
+                            </div>
+                            <div class="button-row">
+                                <button class="btn btn-ghost" onclick="limparFiltrosAmostras()">Listar todas</button>
+                                <button class="btn btn-secondary" onclick="carregarTodasAmostras()">Pesquisar</button>
+                            </div>
+                        </div>
+                        <div id="resultado-amostras" class="panel-body panel-body-border"></div>
+                    </section>
                 </section>
 
                 <section id="aba-cadastros" class="tab-screen oculto">
@@ -388,6 +428,10 @@
                 titulo: 'Pesquisar Pedido',
                 subtitulo: 'Busque pedidos por CPF, numero do pedido, numero da amostra ou tipo.'
             },
+            amostras: {
+                titulo: 'Amostras',
+                subtitulo: 'Veja todas as amostras cadastradas e abra o pedido relacionado.'
+            },
             cadastros: {
                 titulo: 'Cadastros',
                 subtitulo: 'Gerencie clientes e funcionarios.'
@@ -464,6 +508,7 @@
             history.replaceState(null, '', `#${nome}`);
 
             if (nome === 'pesquisar-pedido') pesquisarPedidos();
+            if (nome === 'amostras') carregarTodasAmostras();
             if (nome === 'cadastros') {
                 carregarClientes();
                 carregarFuncionarios();
@@ -483,6 +528,7 @@
             opcoes = await api('/api/opcoes');
             preencherSelect('amostra-tipo', opcoes.tipos_amostra);
             preencherSelect('filtro-tipo', opcoes.tipos_amostra, true);
+            preencherSelect('amostra-lista-tipo', opcoes.tipos_amostra, true);
             preencherSelect('laudo-tipo', opcoes.tipos_amostra, true);
         }
 
@@ -771,6 +817,90 @@
             } catch (err) {
                 mostrarMensagem(err.message);
             }
+        }
+
+        function queryTodasAmostras() {
+            const params = new URLSearchParams();
+            if (valorCampo('amostra-lista-cpf')) params.set('cpf', valorCampo('amostra-lista-cpf'));
+            if (valorCampo('amostra-lista-pedido')) params.set('numero_pedido', valorCampo('amostra-lista-pedido'));
+            if (valorCampo('amostra-lista-numero')) params.set('numero_amostra', valorCampo('amostra-lista-numero'));
+            if (valorCampo('amostra-lista-tipo')) params.set('tipo_amostra', valorCampo('amostra-lista-tipo'));
+            return params.toString();
+        }
+
+        async function carregarTodasAmostras() {
+            const div = document.getElementById('resultado-amostras');
+            div.innerHTML = `
+                <div class="empty-state">
+                    <strong>Carregando amostras</strong>
+                    <span>Aguarde um instante.</span>
+                </div>
+            `;
+
+            try {
+                const query = queryTodasAmostras();
+                const amostras = await api(`/api/laudos${query ? `?${query}` : ''}`);
+                renderTodasAmostras(amostras);
+            } catch (err) {
+                mostrarMensagem(err.message);
+            }
+        }
+
+        function renderTodasAmostras(amostras) {
+            const div = document.getElementById('resultado-amostras');
+            if (!Array.isArray(amostras) || amostras.length === 0) {
+                div.innerHTML = `
+                    <div class="empty-state">
+                        <strong>Nenhuma amostra encontrada</strong>
+                        <span>Cadastre uma amostra ou ajuste os filtros.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            div.innerHTML = `
+                <div class="table-wrap">
+                    <table class="data-table compact-table">
+                        <thead>
+                            <tr>
+                                <th>Pedido</th>
+                                <th>Amostra</th>
+                                <th>Cliente</th>
+                                <th>Status</th>
+                                <th>Acao</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${amostras.map((amostra) => `
+                                <tr>
+                                    <td>
+                                        <strong>${texto(amostra.numero_pedido)}</strong>
+                                        <small class="table-subtext">Pedido ${texto(amostra.pedido_id)}</small>
+                                    </td>
+                                    <td>
+                                        <strong>${texto(amostra.numero_amostra)} - ${texto(amostra.identificacao_amostra)}</strong>
+                                        <small class="table-subtext">${texto(amostra.tipo_amostra)}</small>
+                                    </td>
+                                    <td>
+                                        ${texto(amostra.nome_cliente)}
+                                        <small class="table-subtext">CPF ${texto(amostra.cpf_cliente)}</small>
+                                    </td>
+                                    <td><span class="status-badge ${statusClasse(amostra.status)}">${texto(amostra.status)}</span></td>
+                                    <td class="table-actions">
+                                        <button class="btn btn-secondary" onclick="abrirPedidoPesquisa(${amostra.pedido_id})">Abrir pedido</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function limparFiltrosAmostras() {
+            ['amostra-lista-cpf', 'amostra-lista-pedido', 'amostra-lista-numero'].forEach((id) => document.getElementById(id).value = '');
+            document.getElementById('amostra-lista-tipo').value = '';
+            carregarTodasAmostras();
         }
 
         async function carregarClientes() {
