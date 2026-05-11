@@ -48,16 +48,17 @@ FACUL/
 ## Como executar o projeto
 
 Primeiro, instale as dependências:
-
+```
 npm install
-
+```
 Depois, inicie o servidor:
-
+```
 npm start
-
+```
 O sistema ficará disponível no navegador pelo endereço:
-
+```
 http://localhost:3000
+```
 Acesso inicial
 
 Para acessar como funcionário, use:
