@@ -800,7 +800,44 @@ app.delete('/api/clientes/:id', verificarToken, exigirFuncionario, asyncRoute(as
     const cliente = await get('SELECT * FROM clientes WHERE id = ?', [req.params.id]);
     if (!cliente) throw erro(404, 'Cliente não encontrado.');
 
-    await run('DELETE FROM clientes WHERE id = ?', [cliente.id]);
+    await withTransaction(async () => {
+        const colunasPedidos = await colunasTabela('pedidos');
+        const colunasAmostras = await colunasTabela('amostras');
+        const pedidosCliente = [];
+
+        if (colunasPedidos.includes('cpf_cliente')) {
+            pedidosCliente.push(...await all('SELECT id FROM pedidos WHERE cpf_cliente = ?', [cliente.cpf]));
+        }
+
+        if (colunasPedidos.includes('cliente_id')) {
+            pedidosCliente.push(...await all('SELECT id FROM pedidos WHERE cliente_id = ?', [cliente.id]));
+        }
+
+        const pedidoIds = [...new Set(pedidosCliente.map((pedido) => pedido.id))];
+        if (pedidoIds.length && colunasAmostras.includes('pedido_id')) {
+            const placeholders = pedidoIds.map(() => '?').join(', ');
+            await run(`DELETE FROM amostras WHERE pedido_id IN (${placeholders})`, pedidoIds);
+        }
+
+        if (colunasAmostras.includes('cpf_cliente')) {
+            await run('DELETE FROM amostras WHERE cpf_cliente = ?', [cliente.cpf]);
+        }
+
+        if (colunasAmostras.includes('cliente_id')) {
+            await run('DELETE FROM amostras WHERE cliente_id = ?', [cliente.id]);
+        }
+
+        if (colunasPedidos.includes('cpf_cliente')) {
+            await run('DELETE FROM pedidos WHERE cpf_cliente = ?', [cliente.cpf]);
+        }
+
+        if (colunasPedidos.includes('cliente_id')) {
+            await run('DELETE FROM pedidos WHERE cliente_id = ?', [cliente.id]);
+        }
+
+        await run('DELETE FROM clientes WHERE id = ?', [cliente.id]);
+    });
+
     res.json({ sucesso: true, mensagem: 'Cliente apagado com sucesso.' });
 }));
 
