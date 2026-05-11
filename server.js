@@ -159,14 +159,53 @@ async function tabelaExiste(nome) {
 }
 
 async function colunasTabela(nome) {
-    const rows = await all(`PRAGMA table_info(${nome})`);
+    const rows = await all(`PRAGMA table_info(${identificadorSql(nome)})`);
     return rows.map((row) => row.name);
+}
+
+function identificadorSql(nome) {
+    return `"${String(nome).replace(/"/g, '""')}"`;
+}
+
+async function tabelasBanco() {
+    const rows = await all(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+    );
+    return rows.map((row) => row.name);
+}
+
+async function chavesEstrangeirasTabela(nome) {
+    return all(`PRAGMA foreign_key_list(${identificadorSql(nome)})`);
+}
+
+function chaveReferencia(fk, tabela, coluna = 'id') {
+    return fk.table === tabela && (!fk.to || fk.to === coluna);
+}
+
+async function apagarReferenciasPorValores(tabelaPai, colunaPai, valores) {
+    const unicos = [...new Set(valores.filter((valor) => valor !== undefined && valor !== null))];
+    if (!unicos.length) return;
+
+    const tabelas = await tabelasBanco();
+    const placeholders = unicos.map(() => '?').join(', ');
+    for (const tabela of tabelas) {
+        if (tabela === tabelaPai) continue;
+        const fks = await chavesEstrangeirasTabela(tabela);
+        for (const fk of fks) {
+            if (chaveReferencia(fk, tabelaPai, colunaPai)) {
+                await run(
+                    `DELETE FROM ${identificadorSql(tabela)} WHERE ${identificadorSql(fk.from)} IN (${placeholders})`,
+                    unicos
+                );
+            }
+        }
+    }
 }
 
 async function adicionarColunaSeNaoExiste(tabela, coluna, definicao) {
     const colunas = await colunasTabela(tabela);
     if (!colunas.includes(coluna)) {
-        await run(`ALTER TABLE ${tabela} ADD COLUMN ${coluna} ${definicao}`);
+        await run(`ALTER TABLE ${identificadorSql(tabela)} ADD COLUMN ${identificadorSql(coluna)} ${definicao}`);
     }
 }
 
@@ -595,6 +634,69 @@ async function migrarAmostras() {
     });
 }
 
+async function migrarAmostrasLegadasPendentes() {
+    const tabelas = (await tabelasBanco()).filter((nome) => nome.startsWith('amostras_legado_'));
+    if (!tabelas.length) return;
+
+    await run(`CREATE TABLE IF NOT EXISTS migracoes_amostras_legadas (
+        tabela TEXT NOT NULL,
+        registro_id INTEGER NOT NULL,
+        PRIMARY KEY (tabela, registro_id)
+    )`);
+
+    await withTransaction(async () => {
+        for (const tabela of tabelas) {
+            const colunas = await colunasTabela(tabela);
+            if (!colunas.includes('id') || !colunas.includes('cliente_id')) continue;
+
+            const campoObservacoes = colunas.includes('observacoes') ? 'a.observacoes' : "'' AS observacoes";
+            const legadas = await all(
+                `SELECT a.id, a.cliente_id, ${campoObservacoes}, c.cpf, c.nome
+                 FROM ${identificadorSql(tabela)} a
+                 LEFT JOIN clientes c ON c.id = a.cliente_id
+                 WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM migracoes_amostras_legadas m
+                    WHERE m.tabela = ? AND m.registro_id = a.id
+                 )
+                 ORDER BY a.id ASC`,
+                [tabela]
+            );
+
+            for (const legada of legadas) {
+                const cpfNormalizado = normalizarCpf(legada.cpf);
+                const cpf = cpfNormalizado || `LEGADO-${legada.cliente_id || legada.id}`;
+                const nome = texto(legada.nome) || `Cliente legado ${legada.cliente_id || legada.id}`;
+                const identificacao = `Amostra antiga ${legada.id}`;
+
+                const existente = await get(
+                    `SELECT id
+                     FROM amostras
+                     WHERE identificacao_amostra = ? AND cpf_cliente = ?
+                     LIMIT 1`,
+                    [identificacao, cpf]
+                );
+
+                if (!existente) {
+                    await upsertCliente(cpf, nome);
+                    const pedido = await criarPedidoNoBanco({ cpf, nome });
+                    await adicionarAmostraNoBanco(pedido.id, {
+                        identificacao_amostra: identificacao,
+                        tipo_amostra: 'Solo',
+                        laudo: texto(legada.observacoes)
+                    });
+                }
+
+                await run(
+                    `INSERT OR IGNORE INTO migracoes_amostras_legadas (tabela, registro_id)
+                     VALUES (?, ?)`,
+                    [tabela, legada.id]
+                );
+            }
+        }
+    });
+}
+
 async function inicializarBanco() {
     await run('PRAGMA foreign_keys = OFF');
 
@@ -624,6 +726,7 @@ async function inicializarBanco() {
     )`);
 
     await migrarAmostras();
+    await migrarAmostrasLegadasPendentes();
 
     await run('CREATE UNIQUE INDEX IF NOT EXISTS idx_pedidos_numero ON pedidos(numero_pedido)');
     await run('CREATE INDEX IF NOT EXISTS idx_pedidos_cpf ON pedidos(cpf_cliente)');
@@ -819,6 +922,8 @@ app.delete('/api/clientes/:id', verificarToken, exigirFuncionario, asyncRoute(as
             await run(`DELETE FROM amostras WHERE pedido_id IN (${placeholders})`, pedidoIds);
         }
 
+        await apagarReferenciasPorValores('pedidos', 'id', pedidoIds);
+
         if (colunasAmostras.includes('cpf_cliente')) {
             await run('DELETE FROM amostras WHERE cpf_cliente = ?', [cliente.cpf]);
         }
@@ -834,6 +939,8 @@ app.delete('/api/clientes/:id', verificarToken, exigirFuncionario, asyncRoute(as
         if (colunasPedidos.includes('cliente_id')) {
             await run('DELETE FROM pedidos WHERE cliente_id = ?', [cliente.id]);
         }
+
+        await apagarReferenciasPorValores('clientes', 'id', [cliente.id]);
 
         await run('DELETE FROM clientes WHERE id = ?', [cliente.id]);
     });
