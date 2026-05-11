@@ -888,3 +888,29 @@ select:focus {
         width: 100%;
     }
 }
+
+.data-table th:last-child,
+.data-table td.table-actions {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--surface);
+    box-shadow: -8px 0 14px rgba(18, 59, 36, 0.08);
+}
+
+.data-table th:last-child {
+    z-index: 2;
+    background: var(--surface-soft);
+}
+
+.table-actions {
+    text-align: right;
+}
+
+.table-actions .btn {
+    width: auto;
+}
+
+.table-actions .btn + .btn {
+    margin-left: 8px;
+}
